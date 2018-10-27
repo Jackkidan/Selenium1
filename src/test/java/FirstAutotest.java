@@ -5,6 +5,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -18,7 +19,11 @@ import java.util.concurrent.TimeUnit;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+
+
 public class FirstAutotest {
+
+
     WebDriver driver;
 
     @Before
@@ -63,15 +68,13 @@ public class FirstAutotest {
         //xpath не смог написать руками, пришлось юзать плагинчик.
         WebDriverWait wait = new WebDriverWait(driver, 5);
         // Чекбокс я согласен
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//label[@class = 'adaptive-checkbox-label' and contains(text(), ' Я согласен на обработку моих персональных данных в целях расчета страховой премии. ')]")));
         WebElement checkBoxElement = driver.findElement(By.xpath("//label[@class = 'adaptive-checkbox-label' and contains(text(), ' Я согласен на обработку моих персональных данных в целях расчета страховой премии. ')]"));
-        wait.pollingEvery(Duration.ofMillis(500))
-                .until(ExpectedConditions.elementToBeClickable(checkBoxElement));
         checkBoxElement.click();
         // Несколько в течение года
         WebElement severalTripsButton = findByXpath("//div[@id='calc-vzr-steps']/myrgs-steps-partner-auth//" +
                 "div[@class='steps']/div[1]/div[@class='step-body']//form/div[1]/btn-radio-group/div/button[2]");
-        wait.pollingEvery(Duration.ofMillis(500))
-                .until(ExpectedConditions.elementToBeClickable(severalTripsButton));
         severalTripsButton.click();
 
         //Step 7
@@ -86,13 +89,32 @@ public class FirstAutotest {
         // step 8
         WebElement webElementForSelect = driver.findElement(By.id("ArrivalCountryList"));
         Select chooseCountry = new Select(webElementForSelect);
+        // Как установить ожидание открытия списка?
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         chooseCountry.selectByVisibleText("Испания");
+        // Как нормально работать с этим календарем?
+        Actions builder = new Actions(driver);
+        builder.sendKeys(Keys.TAB).build().perform();
+        WebElement calendarElement = findByXpath("//body/div[5]/div[@class='datepicker-days']/table[@class='table-condensed']/tbody/tr[6]/td[2]");
+        calendarElement.click();
 
-        WebElement calendarElement = findByXpath("//input[@class = 'form-control width-xs-9rem width-sm-9rem']");
-        calendarElement.sendKeys(Keys.ENTER);
+        // не более 90
+        WebElement daysOfTravel = findByXpath("//label[@class = 'btn btn-attention']");
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", daysOfTravel);
+        daysOfTravel.click();
+        WebElement inputNameLastname = findByXpath("//div[@id='calc-vzr-steps']/myrgs-steps-partner-auth//div[@class='steps']/div[1]/div[@class='step-body']/div[@class='row-step-body']//form/div[2]//div[@class='panel panel-default']/div[2]/div[1]/div//div[@class='form-group']/input[@class='form-control']");
+        inputNameLastname.sendKeys("IVAN IVANOV");
+        builder.sendKeys(Keys.TAB);
+
+
 
 
     }
+
 
 
     private WebElement findByXpath(String xpath) {
