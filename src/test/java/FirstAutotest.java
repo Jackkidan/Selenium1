@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.interactions.Mouse;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -16,6 +17,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.Enum.valueOf;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -62,7 +64,7 @@ public class FirstAutotest {
         //driver.manage().timeouts().pageLoadTimeout(5, SECONDS);
         WebElement calculateHeader = findByXpath("//div[@class='container container-rgs-app-title']");
         String expectedText = "Калькулятор страхования путешественников онлайн";
-        Assert.assertEquals("Калькулятор страхования путешественников онлайн", expectedText, calculateHeader.getText());
+        Assert.assertEquals("Сравнение: ", expectedText, calculateHeader.getText());
 
         //Step 6
         //xpath не смог написать руками, пришлось юзать плагинчик.
@@ -96,9 +98,9 @@ public class FirstAutotest {
             e.printStackTrace();
         }
         chooseCountry.selectByVisibleText("Испания");
-        // Как нормально работать с этим календарем?
         Actions builder = new Actions(driver);
         builder.sendKeys(Keys.TAB).build().perform();
+
         WebElement calendarElement = findByXpath("//body/div[5]/div[@class='datepicker-days']/table[@class='table-condensed']/tbody/tr[6]/td[2]");
         calendarElement.click();
 
@@ -106,11 +108,44 @@ public class FirstAutotest {
         WebElement daysOfTravel = findByXpath("//label[@class = 'btn btn-attention']");
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", daysOfTravel);
         daysOfTravel.click();
+
         WebElement inputNameLastname = findByXpath("//div[@id='calc-vzr-steps']/myrgs-steps-partner-auth//div[@class='steps']/div[1]/div[@class='step-body']/div[@class='row-step-body']//form/div[2]//div[@class='panel panel-default']/div[2]/div[1]/div//div[@class='form-group']/input[@class='form-control']");
         inputNameLastname.sendKeys("IVAN IVANOV");
+
         inputNameLastname.sendKeys(Keys.TAB);
         builder.sendKeys("12121985").build().perform();
 
+        Actions actions = new Actions(driver);
+        WebElement checkLeisure = findByXpath("//*[contains(text(),' активный отдых или спорт ')]//preceding::div[contains(@class,'toggle')]//div[@class='toggle-group']//span[@class = 'toggle-handle']");
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", checkLeisure);
+        actions.click(checkLeisure).perform();
+
+        // Stage 9
+        WebElement submitButton = findByXpath("//button[@class = 'btn btn-primary btn-sm text-uppercase text-semibold' and contains(text(), ' Рассчитать ')]");
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", submitButton);
+        submitButton.click();
+
+        // Stage 10
+        String expectedMultiTripsText = "Многократные поездки в течение года";
+        String expecterInsuranceText = "(количество дней суммарно: 90)";
+        String expectedCountryText = "Шенген";
+        String expectedDateOfBirthText = "12.12.1985";
+        String expectedNameText = "IVAN IVANOV";
+        String expectedLeisureText = "(включая активный отдых)";
+
+        WebElement multiTrips = findByCss("[data-bind='with\\: Trips']");
+        WebElement tripInsurance = findByXpath("//span[@class='summary-value']/div[1]/span[4]");
+        WebElement tripCounry = findByCss("[data-bind='foreach\\: countries'] [data-bind]");
+        WebElement dateOfBirth = findByCss("[data-bind=' text\\: BirthDay\\.repr\\(\\'moscowRussianDate\\'\\)']");
+        WebElement nameText = findByCss("[data-bind='text\\: LastName\\(\\) \\+ \\' \\' \\+ FirstName\\(\\)']");
+        WebElement leisure = findByXpath("//div[@class='summary']/div[7]/div[1]/div[@class='summary-row']//small[.='(включая активный отдых)']");
+
+        Assert.assertEquals("Многократные поездки в течение года", expectedMultiTripsText, multiTrips.getAttribute("textContent").trim());
+        Assert.assertEquals("(количество дней суммарно:", expecterInsuranceText, tripInsurance.getAttribute("textContent").trim());
+        Assert.assertEquals("Шенген", expectedCountryText, tripCounry.getAttribute("textContent").trim());
+        Assert.assertEquals("12.12.1985", expectedDateOfBirthText, dateOfBirth.getAttribute("textContent").trim());
+        Assert.assertEquals("IVAN IVANOV", expectedNameText, nameText.getAttribute("textContent").trim());
+        Assert.assertEquals("Включен", expectedLeisureText, leisure.getAttribute("textContent").trim());
 
 
 
@@ -120,6 +155,9 @@ public class FirstAutotest {
 
     private WebElement findByXpath(String xpath) {
         return driver.findElement(By.xpath(xpath));
+    }
+    private WebElement findByCss(String css) {
+        return driver.findElement(By.cssSelector(css));
     }
 
 }
