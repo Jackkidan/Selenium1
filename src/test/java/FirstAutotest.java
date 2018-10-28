@@ -108,7 +108,8 @@ public class FirstAutotest {
         daysOfTravel.click();
         WebElement inputNameLastname = findByXpath("//div[@id='calc-vzr-steps']/myrgs-steps-partner-auth//div[@class='steps']/div[1]/div[@class='step-body']/div[@class='row-step-body']//form/div[2]//div[@class='panel panel-default']/div[2]/div[1]/div//div[@class='form-group']/input[@class='form-control']");
         inputNameLastname.sendKeys("IVAN IVANOV");
-        builder.sendKeys(Keys.TAB);
+        inputNameLastname.sendKeys(Keys.TAB);
+        builder.sendKeys("12121985").build().perform();
 
 
 
