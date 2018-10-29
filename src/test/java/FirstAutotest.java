@@ -9,6 +9,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
+
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class FirstAutotest {
@@ -26,7 +28,7 @@ public class FirstAutotest {
 
     @After
     public void closeDriver() {
-        driver.close();
+        //driver.close();
     }
 
     @Test
@@ -57,20 +59,24 @@ public class FirstAutotest {
         WebDriverWait wait = new WebDriverWait(driver, 5);
 
         // Чекбокс я согласен
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//label[@class = 'adaptive-checkbox-label' and contains(text(), ' Я согласен на обработку моих персональных данных в целях расчета страховой премии. ')]")));
+        wait.pollingEvery(Duration.ofMillis(300))
+                .until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//label[@class = 'adaptive-checkbox-label' and contains(text(), ' Я согласен на обработку моих персональных данных в целях расчета страховой премии. ')]")));
         WebElement checkBoxElement = driver.findElement(By.xpath("//label[@class = 'adaptive-checkbox-label' and contains(text(), ' Я согласен на обработку моих персональных данных в целях расчета страховой премии. ')]"));
         checkBoxElement.click();
 
         // Несколько в течение года
-        WebElement severalTripsButton = findByXpath("//div[@id='calc-vzr-steps']/myrgs-steps-partner-auth//" +
-                "div[@class='steps']/div[1]/div[@class='step-body']//form/div[1]/btn-radio-group/div/button[2]");
+        wait.pollingEvery(Duration.ofMillis(300))
+                .until(ExpectedConditions.elementToBeClickable(By.xpath("//div[@class='step-body']//form/div[1]/btn-radio-group/div/button[2]")));
+        WebElement severalTripsButton = findByXpath("//div[@class='step-body']//form/div[1]/btn-radio-group/div/button[2]");
         severalTripsButton.click();
 
         //Step 7
+        Actions builder = new Actions(driver);
+        wait.pollingEvery(Duration.ofMillis(300))
+                .until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//input[@class = 'form-control-multiple-autocomplete-actual-input tt-input']")));
         WebElement inputCountries = findByXpath("//input[@class = 'form-control-multiple-autocomplete-actual-input tt-input']");
         inputCountries.sendKeys("Шенген");
-        inputCountries.sendKeys(Keys.DOWN);
-        inputCountries.sendKeys(Keys.ENTER);
+        builder.sendKeys(Keys.DOWN).sendKeys(Keys.ENTER).build().perform();
 
 
         // step 8
@@ -83,7 +89,6 @@ public class FirstAutotest {
             e.printStackTrace();
         }
         chooseCountry.selectByVisibleText("Испания");
-        Actions builder = new Actions(driver);
         builder.sendKeys(Keys.TAB).build().perform();
 
         WebElement calendarElement = findByXpath("//body/div[5]/div[@class='datepicker-days']/table[@class='table-condensed']/tbody/tr[6]/td[2]");
